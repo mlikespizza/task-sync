@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sky: #38bdf8;
+}
+
+body {
+  @apply bg-slate-900 text-gray-100 font-sans;
+}
+
+input, textarea {
+  @apply bg-slate-800 text-gray-100 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 px-3 py-2 rounded;
+}
+
+button {
+  @apply rounded px-4 py-2 font-medium transition-colors;
+}
