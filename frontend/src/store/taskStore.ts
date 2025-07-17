@@ -1,15 +1,15 @@
 import { create } from 'zustand';
 import { Task, TaskStore } from '@/types';
 
-export const useTaskStore = create<TaskStore>((set, get) => ({
+export const useTaskStore = create<TaskStore & { authToken: string | null; setAuthToken: (token: string | null) => void }>((set, get) => ({
   tasks: [],
-  
+  authToken: null,
+  setAuthToken: (token: string | null) => set({ authToken: token }),
   addTask: (task: Task) => {
     set((state) => ({
       tasks: [...state.tasks, task]
     }));
   },
-  
   updateTask: (updatedTask: Task) => {
     set((state) => ({
       tasks: state.tasks.map(task => 
@@ -17,22 +17,17 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       )
     }));
   },
-  
   deleteTask: (id: string) => {
     set((state) => ({
       tasks: state.tasks.filter(task => task.id !== id)
     }));
   },
-  
   setTasks: (tasks: Task[]) => {
     set({ tasks });
   },
-  
   reorderTasks: (taskIds: string[], status: string) => {
     set((state) => {
       const updatedTasks = [...state.tasks];
-      
-      // Update positions for tasks in the reordered column
       taskIds.forEach((id, index) => {
         const taskIndex = updatedTasks.findIndex(t => t.id === id);
         if (taskIndex !== -1) {
@@ -43,7 +38,6 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
           };
         }
       });
-      
       return { tasks: updatedTasks };
     });
   }

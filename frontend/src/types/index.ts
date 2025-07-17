@@ -14,4 +14,6 @@ export interface TaskStore {
   deleteTask: (id: string) => void;
   setTasks: (tasks: Task[]) => void;
   reorderTasks: (taskIds: string[], status: string) => void;
+  authToken?: string | null;
+  setAuthToken?: (token: string | null) => void;
 }

@@ -51,22 +51,25 @@ export default function TaskBoard() {
   const deleteTask = useTaskStore((s) => s.deleteTask);
   const setTasks = useTaskStore((s) => s.setTasks);
   const reorderTasks = useTaskStore((s) => s.reorderTasks);
+  const authToken = useTaskStore((s) => s.authToken);
 
   // API call helper
   const apiCall = async (url: string, options: RequestInit = {}) => {
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(options.headers as Record<string, string>),
+      };
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
       const response = await fetch(`http://localhost:3001${url}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
+        headers,
         ...options,
       });
-      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
       return response.json();
     } catch (error) {
       console.error('API call failed:', error);
@@ -263,31 +266,32 @@ export default function TaskBoard() {
 
   // Render the task board
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6 text-center">TaskSync Board</h1>
-      
+    <div className="p-6 bg-slate-100 min-h-screen">
+      <h1 className="text-3xl font-extrabold mb-8 text-center text-sky-700 tracking-tight drop-shadow-sm">TaskSync Board</h1>
       <DndContext 
         sensors={sensors} 
         collisionDetection={closestCenter} 
         onDragEnd={onDragEnd}
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {(["todo", "inprogress", "done"] as const).map((status) => {
             const columnTasks = tasks
               .filter((t) => t.status === status)
               .sort((a, b) => a.position - b.position);
-            
             return (
               <DroppableColumn key={status} id={status}>
-                <h2 className="text-lg font-semibold mb-4 capitalize text-center">
-                  {status === 'inprogress' ? 'In Progress' : status}
-                </h2>
-                
+                <header className="mb-6 flex flex-col items-center">
+                  <span className={`text-lg font-bold tracking-wide uppercase px-4 py-1 rounded-full shadow-sm
+                    ${status === 'todo' ? 'bg-sky-100 text-sky-700' : status === 'inprogress' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}
+                  `}>
+                    {status === 'inprogress' ? 'In Progress' : status}
+                  </span>
+                </header>
                 <SortableContext 
                   items={columnTasks.map((t) => t.id)} 
                   strategy={verticalListSortingStrategy}
                 >
-                  <ul className="space-y-2">
+                  <ul className="space-y-3">
                     {columnTasks.map((task) => (
                       <DraggableTask
                         key={task.id}
@@ -299,10 +303,8 @@ export default function TaskBoard() {
                             ...task, 
                             status: nextStatus 
                           };
-                          
                           updateTask(updatedTask);
                           socket.emit("update-task", updatedTask);
-                          
                           try {
                             await apiCall(`/tasks/${task.id}`, {
                               method: "PUT",
@@ -315,7 +317,6 @@ export default function TaskBoard() {
                         onDelete={async () => {
                           deleteTask(task.id);
                           socket.emit("delete-task", task.id);
-                          
                           try {
                             await apiCall(`/tasks/${task.id}`, {
                               method: "DELETE",
@@ -328,11 +329,11 @@ export default function TaskBoard() {
                     ))}
                   </ul>
                 </SortableContext>
-                
                 {columnTasks.length === 0 && (
-                  <p className="text-gray-500 text-center mt-8">
-                    Drop tasks here
-                  </p>
+                  <div className="flex flex-col items-center justify-center mt-10 text-gray-400 select-none">
+                    <svg width="48" height="48" fill="none" viewBox="0 0 24 24" className="mb-2"><rect x="3" y="5" width="18" height="14" rx="2" fill="#e5e7eb"/><path d="M3 7h18" stroke="#cbd5e1" strokeWidth="2"/><rect x="7" y="11" width="10" height="2" rx="1" fill="#cbd5e1"/></svg>
+                    <span className="text-sm">No tasks. Drop tasks here!</span>
+                  </div>
                 )}
               </DroppableColumn>
             );
