@@ -32,21 +32,48 @@ export default function DraggableTask({
   };
 
   return (
-    <li
+    <div
       ref={setNodeRef}
-      style={style}
-      className={`
-        p-3 mb-2 bg-white rounded-lg shadow-sm border
-        hover:shadow-md transition-shadow duration-200
-        ${isDragging ? 'opacity-50 shadow-lg' : ''}
-      `}
+      style={{
+        ...style,
+        background: isDragging ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.95)',
+        borderRadius: '15px',
+        padding: '15px',
+        marginBottom: '12px',
+        boxShadow: isDragging 
+          ? '0 8px 25px rgba(0, 0, 0, 0.15)' 
+          : '0 4px 15px rgba(0, 0, 0, 0.08)',
+        border: '1px solid rgba(0, 0, 0, 0.1)',
+        cursor: isDragging ? 'grabbing' : 'grab',
+        transform: isDragging 
+          ? `${CSS.Transform.toString(transform)} rotate(2deg)` 
+          : CSS.Transform.toString(transform),
+        transition: isDragging ? 'none' : 'all 0.2s ease',
+        opacity: isDragging ? 0.8 : 1,
+        zIndex: isDragging ? 1000 : 1
+      }}
       {...attributes}
       {...listeners}
     >
-      <div className="flex justify-between items-center">
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: '10px'
+      }}>
         <span 
-          className="flex-1 cursor-pointer"
-          onClick={onClick}
+          style={{
+            flex: 1,
+            fontSize: '16px',
+            color: '#333',
+            fontWeight: '500',
+            cursor: 'pointer',
+            wordBreak: 'break-word'
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick();
+          }}
         >
           {task.title}
         </span>
@@ -55,11 +82,36 @@ export default function DraggableTask({
             e.stopPropagation();
             onDelete();
           }}
-          className="ml-2 px-2 py-1 text-red-500 hover:bg-red-50 rounded"
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#ff6b6b',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            padding: '5px 8px',
+            borderRadius: '8px',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minWidth: '30px',
+            height: '30px'
+          }}
+          onMouseEnter={(e) => {
+            const target = e.target as HTMLButtonElement;
+            target.style.background = 'rgba(255, 107, 107, 0.1)';
+            target.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={(e) => {
+            const target = e.target as HTMLButtonElement;
+            target.style.background = 'none';
+            target.style.transform = 'scale(1)';
+          }}
         >
           ×
         </button>
       </div>
-    </li>
+    </div>
   );
 }

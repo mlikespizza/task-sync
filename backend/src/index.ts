@@ -43,7 +43,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Health check / root
 app.get("/", (_req, res) => {
   res.json({
     message: "TaskSync Backend is running",

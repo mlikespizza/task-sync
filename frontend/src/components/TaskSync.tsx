@@ -35,42 +35,90 @@ export default function TaskSync() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-900">
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-lg bg-slate-900/70 border-b border-slate-800 px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <div className="text-sky-400 text-2xl font-bold">🧠 TaskSync</div>
-          <div className="text-3xl font-bold text-sky-400">Hello Tailwind!</div>
-
-          <span className="bg-sky-800 text-sky-200 text-xs px-2 py-1 rounded">v1.0</span>
-        </div>
-        <div className="flex items-center space-x-2 text-sm">
-          <span
-            className={`w-2 h-2 rounded-full ${
-              connectionStatus === 'connected' ? 'bg-green-500' :
-              connectionStatus === 'connecting' ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'
-            }`}
-          />
-          <span>
-            {connectionStatus === 'connected'
-              ? 'Connected'
-              : connectionStatus === 'connecting'
-              ? 'Connecting...'
-              : 'Disconnected'}
-          </span>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      {/* Header */}
+      <header style={{
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        padding: '20px 0',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 50
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '0 20px'
+        }}>
+          <h1 style={{
+            fontSize: '2.5rem',
+            fontWeight: 'bold',
+            background: 'linear-gradient(45deg, #667eea, #764ba2)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            margin: 0
+          }}>TaskSync</h1>
+          
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontSize: '14px',
+            color: '#666'
+          }}>
+            <span style={{
+              width: '10px',
+              height: '10px',
+              borderRadius: '50%',
+              backgroundColor: connectionStatus === 'connected' ? '#10b981' :
+                              connectionStatus === 'connecting' ? '#f59e0b' : '#ef4444',
+              animation: connectionStatus === 'connecting' ? 'pulse 2s infinite' : 'none'
+            }}></span>
+            <span>
+              {connectionStatus === 'connected'
+                ? 'Connected'
+                : connectionStatus === 'connecting'
+                ? 'Connecting...'
+                : 'Disconnected'}
+            </span>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-6 py-8">
+      <main style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '40px 20px'
+      }}>
         <TaskForm />
         <TaskBoard />
       </main>
 
       {/* Footer */}
-      <footer className="text-center text-gray-500 py-4 border-t border-slate-800">
+      <footer style={{
+        textAlign: 'center',
+        color: 'rgba(255, 255, 255, 0.7)',
+        padding: '20px',
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+      }}>
         TaskSync &copy; {new Date().getFullYear()}
       </footer>
+      
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 }

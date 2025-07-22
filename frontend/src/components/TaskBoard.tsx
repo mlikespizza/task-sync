@@ -261,84 +261,143 @@ export default function TaskBoard() {
     })
   );
 
-  // Render the task board
+  const columns = [
+    { id: 'todo', title: 'To Do' },
+    { id: 'inprogress', title: 'In Progress' },
+    { id: 'done', title: 'Done' }
+  ];
+
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6 text-center">TaskSync Board</h1>
+    <div style={{ marginTop: '20px' }}>
+      <h2 style={{
+        textAlign: 'center',
+        fontSize: '2.2rem',
+        fontWeight: 'bold',
+        color: 'white',
+        marginBottom: '40px',
+        textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
+        background: 'linear-gradient(45deg, #fff, #f0f0f0)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent'
+      }}>Task Board</h2>
       
-      <DndContext 
-        sensors={sensors} 
-        collisionDetection={closestCenter} 
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
         onDragEnd={onDragEnd}
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {(["todo", "inprogress", "done"] as const).map((status) => {
-            const columnTasks = tasks
-              .filter((t) => t.status === status)
-              .sort((a, b) => a.position - b.position);
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '25px',
+          maxWidth: '1200px',
+          margin: '0 auto'
+        }}>
+          {columns.map((column, index) => {
+            const gradients = [
+              'linear-gradient(135deg, #ff6b6b, #ee5a24)',
+              'linear-gradient(135deg, #4834d4, #686de0)',
+              'linear-gradient(135deg, #00d2d3, #54a0ff)'
+            ];
             
             return (
-              <DroppableColumn key={status} id={status}>
-                <h2 className="text-lg font-semibold mb-4 capitalize text-center">
-                  {status === 'inprogress' ? 'In Progress' : status}
-                </h2>
-                
-                <SortableContext 
-                  items={columnTasks.map((t) => t.id)} 
-                  strategy={verticalListSortingStrategy}
-                >
-                  <ul className="space-y-2">
-                    {columnTasks.map((task) => (
-                      <DraggableTask
-                        key={task.id}
-                        id={task.id}
-                        task={task}
-                        onClick={async () => {
-                          const nextStatus = getNextStatus(task.status);
-                          const updatedTask = { 
-                            ...task, 
-                            status: nextStatus 
-                          };
-                          
-                          updateTask(updatedTask);
-                          socket.emit("update-task", updatedTask);
-                          
-                          try {
-                            await apiCall(`/tasks/${task.id}`, {
-                              method: "PUT",
-                              body: JSON.stringify(updatedTask),
-                            });
-                          } catch (error) {
-                            console.error('Failed to update task:', error);
-                          }
-                        }}
-                        onDelete={async () => {
-                          deleteTask(task.id);
-                          socket.emit("delete-task", task.id);
-                          
-                          try {
-                            await apiCall(`/tasks/${task.id}`, {
-                              method: "DELETE",
-                            });
-                          } catch (error) {
-                            console.error('Failed to delete task:', error);
-                          }
-                        }}
-                      />
-                    ))}
-                  </ul>
+              <DroppableColumn key={column.id} id={column.id}>
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  borderRadius: '20px',
+                  padding: '20px',
+                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+                  backdropFilter: 'blur(10px)',
+                  minHeight: '400px'
+                }}>
+                  <h3 style={{
+                    background: gradients[index],
+                    color: 'white',
+                    textAlign: 'center',
+                    padding: '15px',
+                    borderRadius: '15px',
+                    fontSize: '1.2rem',
+                    fontWeight: 'bold',
+                    marginBottom: '20px',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)'
+                  }}>
+                    {column.title} ({tasks.filter(task => task.status === column.id).length})
+                  </h3>
+                  
+                  <SortableContext 
+                    items={tasks.filter(task => task.status === column.id).map(t => t.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
+                      minHeight: '300px'
+                    }}>
+                      {tasks
+                        .filter((task) => task.status === column.id)
+                        .sort((a, b) => a.position - b.position)
+                        .map((task) => (
+                          <DraggableTask 
+                            key={task.id} 
+                            task={task}
+                            id={task.id}
+                            onClick={async () => {
+                              const nextStatus = getNextStatus(task.status);
+                              const updatedTask = { 
+                                ...task, 
+                                status: nextStatus 
+                              };
+                              
+                              updateTask(updatedTask);
+                              socket.emit("update-task", updatedTask);
+                              
+                              try {
+                                await apiCall(`/tasks/${task.id}`, {
+                                  method: "PUT",
+                                  body: JSON.stringify(updatedTask),
+                                });
+                              } catch (error) {
+                                console.error('Failed to update task:', error);
+                              }
+                            }}
+                            onDelete={async () => {
+                              deleteTask(task.id);
+                              socket.emit("delete-task", task.id);
+                              
+                              try {
+                                await apiCall(`/tasks/${task.id}`, {
+                                  method: "DELETE",
+                                });
+                              } catch (error) {
+                                console.error('Failed to delete task:', error);
+                              }
+                            }}
+                          />
+                        ))}
+                      
+                      {tasks.filter(task => task.status === column.id).length === 0 && (
+                      <div style={{
+                        textAlign: 'center',
+                        color: '#999',
+                        padding: '40px 20px',
+                        border: '2px dashed #ddd',
+                        borderRadius: '15px',
+                        background: 'rgba(0, 0, 0, 0.02)',
+                        fontSize: '16px'
+                      }}>
+                        <div style={{ fontSize: '2rem', marginBottom: '10px' }}>📝</div>
+                        No tasks yet
+                      </div>
+                    )}
+                  </div>
                 </SortableContext>
-                
-                {columnTasks.length === 0 && (
-                  <p className="text-gray-500 text-center mt-8">
-                    Drop tasks here
-                  </p>
-                )}
-              </DroppableColumn>
-            );
-          })}
-        </div>
-      </DndContext>
-    </div>
-  );
+              </div>
+            </DroppableColumn>
+          );
+        })}
+      </div>
+    </DndContext>
+  </div>
+);
 }
